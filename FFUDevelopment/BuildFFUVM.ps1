@@ -362,6 +362,8 @@ param(
     [string]$ExportConfigFile
 )
 $version = '2412.3'
+$SelectedDriverModel =''
+
 
 # If a config file is specified and it exists, load it
 if ($ConfigFile -and (Test-Path -Path $ConfigFile)) {
@@ -1161,7 +1163,9 @@ function Get-LenovoDrivers {
         $machineType = $machineTypes[$selection - 1].MachineType
         WriteLog "Selected machine type: $machineType"
         $model = $machineTypes[$selection - 1].ProductName
+	$SelectedDriverModel = -join ($Model," ",$machineType)
         WriteLog "Selected model: $model"
+	Set-Variable -Name $model -Value $SelectedDriverModel -Scope Global
     }
     
 
@@ -3793,6 +3797,21 @@ Function New-DeploymentUSB {
                 WriteLog "No FFU file selected. Skipping copy."
             }
         }
+
+	# create ImageModel.txt and write Make/Model to it
+        # ------------------------------------------------------------------
+        if ($CopyDrivers -or $InstallDrivers) {
+            #WriteLog "Inside the Checker Loopsy!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!#########"
+            # Ensure $DeployUnattendPath exists
+            # Build file path and write content
+
+           # $ImageModelTxtPath = Make: {0}`nModel: {1}`nYear: {2}`nColor: {3}" -f $Make, $Model, $Year, $Color
+            $ImageModelTxtPath = Join-Path $DeployPartitionDriveLetter "ImageDetails.txt"
+            "Image Created: $(Get-Date)`nRelease: $WindowsRelease $windowsArch`nVersion: $WindowsVersion`nMake: $Make`nModel: $Model`nDrivers Installed: $InstallDrivers" | Out-File -FilePath $ImageModelTxtPath -Force -Encoding UTF8
+            WriteLog "Wrote $ImageModelTxtPath with Make and Model"
+        }
+        # ------------------------------------------------------------------
+ 
 
         Set-Volume -FileSystemLabel "TempBoot" -NewFileSystemLabel "Boot"
         Set-Volume -FileSystemLabel "TempDeploy" -NewFileSystemLabel "Deploy"
