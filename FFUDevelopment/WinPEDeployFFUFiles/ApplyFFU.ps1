@@ -1,3 +1,43 @@
+function Get-PCInfo {
+    [CmdletBinding()]
+    param()
+
+    Write-Host "--- Retrieving Computer Manufacturer, Model, and Processor ---" -ForegroundColor Cyan
+    WriteLog "--- Retrieving Computer Manufacturer, Model, and Processor ---"
+
+    # Attempt to retrieve Win32_ComputerSystem
+    try {
+        $computerSystemCIM = Get-CimInstance -ClassName Win32_ComputerSystem -ErrorAction Stop
+    } catch {
+        Write-Host "Failed to retrieve Win32_ComputerSystem" -ForegroundColor Red
+        WriteLog   "Failed to retrieve Win32_ComputerSystem: $($_.Exception.Message)" 
+        $computerSystemCIM = $null
+    }
+
+    # Attempt to retrieve Win32_Processor
+    try {
+        $processorCIM = Get-CimInstance -ClassName Win32_Processor -ErrorAction Stop
+    } catch {
+        Write-Host "Failed to retrieve Win32_Processor" -ForegroundColor Red
+        WriteLog "Failed to retrieve Win32_Processor: $($_.Exception.Message)"
+        $processorCIM = $null
+    }
+
+    # If the objects are null, output "Undetermined"
+    $manufacturer = if ($computerSystemCIM) { $computerSystemCIM.Manufacturer } else { "Undetermined" }
+    $model        = if ($computerSystemCIM) { $computerSystemCIM.Model }        else { "Undetermined" }
+    $processor    = if ($processorCIM)      { $processorCIM.Name }             else { "Undetermined" }
+
+    Write-Host "Detected the Following Device Information"
+    WriteLog "Detected the Following Device Information"
+    Write-Host "Manufacturer: $manufacturer"
+    WriteLog "Manufacturer: $manufacturer"
+    Write-Host "Model: $model"
+    WriteLog "Model: $model"
+    Write-Host "Processor: $processor"
+    WriteLog "Processor: $processor"
+}
+
 function Get-USBDrive(){
     $USBDriveLetter = (Get-Volume | Where-Object {$_.DriveType -eq 'Removable' -and $_.FileSystemType -eq 'NTFS'}).DriveLetter
     if ($null -eq $USBDriveLetter){
@@ -135,9 +175,12 @@ $LogFileName = 'ScriptLog.txt'
 $USBDrive = Get-USBDrive
 New-item -Path $USBDrive -Name $LogFileName -ItemType "file" -Force | Out-Null
 $LogFile = $USBDrive + $LogFilename
-$version = '2412.3'
+$version = '2412.1'
 WriteLog 'Begin Logging'
 WriteLog "Script version: $version"
+
+#Check for PC Information and write to Screen and Log
+Get-PCInfo
 
 #Find PhysicalDrive
 # $PhysicalDeviceID = Get-HardDrive
