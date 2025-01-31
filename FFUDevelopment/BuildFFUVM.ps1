@@ -3774,25 +3774,7 @@ Function New-DeploymentUSB {
                     WriteLog "Copying Autopilot folder to $DeployPartitionDriveLetter"
                     Copy-Item -Path "$FFUDevelopmentPath\Autopilot" -Destination $DeployPartitionDriveLetter -Recurse -Force
                 }
-
- # ------------------------------------------------------------------
-                # NEW LOGIC: If $CopyDrivers or $InstallDrivers is TRUE,
-                # create ImageModel.txt and write Make/Model to it
-                # ------------------------------------------------------------------
-                if ($CopyDrivers -or $InstallDrivers) {
-                    # Ensure $DeployUnattendPath exists
-                    if (-not (Test-Path $DeployUnattendPath)) {
-                        New-Item -Path $DeployUnattendPath -ItemType Directory | Out-Null
-                    }
-                    # Build file path and write content
-                    $ImageModelTxtPath = Join-Path $DeployPartitionDriveLetter "ImageModel.txt"
-                    "Make: $Make`nModel: $Model" | Out-File -FilePath $ImageModelTxtPath -Force -Encoding UTF8
-                    WriteLog "Wrote $ImageModelTxtPath with Make and Model"
-                }
-                # ------------------------------------------------------------------
-
-
-            }
+	    }
             else {
                 WriteLog "No FFU file selected. Skipping copy."
             }
@@ -3801,10 +3783,9 @@ Function New-DeploymentUSB {
 	# create ImageModel.txt and write Make/Model to it
         # ------------------------------------------------------------------
         if ($CopyDrivers -or $InstallDrivers) {
-            #WriteLog "Inside the Checker Loopsy!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!#########"
+            
             # Ensure $DeployUnattendPath exists
             # Build file path and write content
-
            # $ImageModelTxtPath = Make: {0}`nModel: {1}`nYear: {2}`nColor: {3}" -f $Make, $Model, $Year, $Color
             $ImageModelTxtPath = Join-Path $DeployPartitionDriveLetter "ImageDetails.txt"
             "Image Created: $(Get-Date)`nRelease: $WindowsRelease $windowsArch`nVersion: $WindowsVersion`nMake: $Make`nModel: $Model`nDrivers Installed: $InstallDrivers" | Out-File -FilePath $ImageModelTxtPath -Force -Encoding UTF8
