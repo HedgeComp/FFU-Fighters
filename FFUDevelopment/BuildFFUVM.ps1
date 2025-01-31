@@ -3737,7 +3737,7 @@ Function New-DeploymentUSB {
                         New-Item -Path $DeployUnattendPath -ItemType Directory | Out-Null
                     }
                     # Build file path and write content
-                    $ImageModelTxtPath = Join-Path $DeployUnattendPath "ImageModel.txt"
+                    $ImageModelTxtPath = Join-Path $DeployPartitionDriveLetter "ImageModel.txt"
                     "Make: $Make`nModel: $Model" | Out-File -FilePath $ImageModelTxtPath -Force -Encoding UTF8
                     WriteLog "Wrote $ImageModelTxtPath with Make and Model"
                 }
@@ -3996,6 +3996,11 @@ $startTime = Get-Date
 Write-Host "FFU build process started at" $startTime
 Write-Host "This process can take 20 minutes or more. Please do not close this window or any additional windows that pop up"
 Write-Host "To track progress, please open the log file $Logfile or use the -Verbose parameter next time"
+
+$ImageModelTxtPath = Join-Path $DeployPartitionDriveLetter "ImageModel.txt"
+"Make: $Make`nModel: $Model" | Out-File -FilePath $ImageModelTxtPath -Force -Encoding UTF8
+WriteLog "Wrote $ImageModelTxtPath with Make and Model"
+
 
 WriteLog 'Begin Logging'
 
