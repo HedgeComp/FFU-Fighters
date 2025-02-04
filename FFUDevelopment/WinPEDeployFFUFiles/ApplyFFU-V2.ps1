@@ -3,14 +3,14 @@ function Get-PCInfo {
     param()
 
     Write-Host "--- Retrieving Computer Manufacturer, Model, and Processor ---" -ForegroundColor Cyan
-    #writelog "--- Retrieving Computer Manufacturer, Model, and Processor ---"
+    writelog "--- Retrieving Computer Manufacturer, Model, and Processor ---"
 
     # Attempt to retrieve Win32_ComputerSystem
     try {
         $computerSystemCIM = Get-CimInstance -ClassName Win32_ComputerSystem -ErrorAction Stop
     } catch {
         Write-Host "Failed to retrieve Win32_ComputerSystem" -ForegroundColor Red
-        #writelog   "Failed to retrieve Win32_ComputerSystem: $($_.Exception.Message)" 
+        writelog   "Failed to retrieve Win32_ComputerSystem: $($_.Exception.Message)" 
         $computerSystemCIM = $null
     }
 
@@ -30,16 +30,13 @@ function Get-PCInfo {
     cls
     Write-Host "-------- DEVICE INFORMATION --------" -ForegroundColor white -BackgroundColor darkGray
     Write-Host ""
-    #Write-Host "Detected the Following Device Information"
-    #writelog "Detected the Following Device Information"
-    #Write-Host "Manufacturer: $manufacturer"
-    #writelog "Manufacturer: $manufacturer"d
-    Write-Host " Make:" -BackgroundColor darkgray -ForegroundColor white -NoNewLine; write-host "  $manufacturer " -ForegroundColor yellow -BackgroundColor Blue
-    Write-Host " Model:" -BackgroundColor darkgray -ForegroundColor white -NoNewLine; write-host " $model " -ForegroundColor yellow -BackgroundColor Blue
-    #Write-Host "Model:  " $model
-	#Write-Host "Manufacturer:" -BackgroundColor darkGray -ForegroundColor darkcyan -NoNewLine; write-host $manufacturer -ForegroundColor DarkGray
-    #writelog "Model: $model"
-    Write-Host " Processor:" -BackgroundColor darkgray -ForegroundColor white -NoNewLine; write-host " $processor " -ForegroundColor yellow -BackgroundColor Blue
+    writelog "Detected the Following Device Information"
+    writelog "Manufacturer: $manufacturer"d
+    Write-Host " Make:" -BackgroundColor darkgray -ForegroundColor white -NoNewLine; write-host "  $manufacturer " -ForegroundColor white -BackgroundColor Blue
+    Write-Host " Model:" -BackgroundColor darkgray -ForegroundColor white -NoNewLine; write-host " $model " -ForegroundColor white -BackgroundColor Blue
+    writelog "Model: $model"
+    Write-Host " Processor:" -BackgroundColor darkgray -ForegroundColor white -NoNewLine; write-host " $processor " -ForegroundColor white -BackgroundColor Blue
+    writelog "Processor: $processor"
 	
 }
 
