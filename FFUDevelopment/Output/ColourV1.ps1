@@ -41,7 +41,7 @@ function Get-PCInfo {
     Write-Host "-------- DEVICE INFORMATION --------" -ForegroundColor White -BackgroundColor DarkGray
 
     Write-Host " Make:" -BackgroundColor DarkGray -ForegroundColor White -NoNewLine
-    Write-Host "  $manufacturer " -ForegroundColor White -BackgroundColor Blue
+    Write-Host " $manufacturer " -ForegroundColor White -BackgroundColor Blue
 
        
    
