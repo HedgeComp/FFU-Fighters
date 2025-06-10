@@ -91,7 +91,8 @@ function Invoke-Process {
             PassThru               = $true
             NoNewWindow            = $true
         }
-        if ($PSCmdlet.ShouldProcess("Process [$FilePath]", "Run with args: [$ArgumentList]")) {
+        #if ($PSCmdlet.ShouldProcess("Process [$FilePath]", "Run with args: [$ArgumentList]")) {
+        if ($PSCmdlet.ShouldProcess("Process [$($FilePath)]", "Run with args: [$($ArgumentList)]")) {
             $cmd       = Start-Process @startProcessParams
             $cmdOutput = Get-Content -Path $stdOutTempFile -Raw
             $cmdError  = Get-Content -Path $stdErrTempFile -Raw
