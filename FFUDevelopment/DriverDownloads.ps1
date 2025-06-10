@@ -8,7 +8,7 @@
     .PARAMETER ModelList
     Path to a CSV file containing rows of "Make" and "Model" to process.
 
-    .PARAMETER DriverFolder
+    .PARAMETER DriversFolder
     Path to your desired Drivers Folder
 
 Useage example:
