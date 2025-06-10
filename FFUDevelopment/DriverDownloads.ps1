@@ -7,6 +7,13 @@
     
     .PARAMETER ModelList
     Path to a CSV file containing rows of "Make" and "Model" to process.
+
+    .PARAMETER DriverFolder
+    Path to your desired Drivers Folder
+
+Useage example:
+
+.\DriverDownloads.ps1 -Make HP -Model 'ProDesk 600' -DriversFolder 'c:\ffudrivers\' -verbose
 #>
 
 [CmdletBinding()]
