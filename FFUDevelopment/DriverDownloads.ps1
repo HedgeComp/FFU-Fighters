@@ -77,27 +77,26 @@ function Invoke-Process {
         [bool]$Wait = $true
     )
 
-    $ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'Stop'
+
     try {
-        $stdOutTempFile = Join-Path $env:TEMP ([guid]::NewGuid().Guid)
-        $stdErrTempFile = Join-Path $env:TEMP ([guid]::NewGuid().Guid)
+        $stdOutTempFile = "$env:TEMP\$((New-Guid).Guid)"
+        $stdErrTempFile = "$env:TEMP\$((New-Guid).Guid)"
 
         $startProcessParams = @{
             FilePath               = $FilePath
             ArgumentList           = $ArgumentList
             RedirectStandardError  = $stdErrTempFile
             RedirectStandardOutput = $stdOutTempFile
-            Wait                   = $Wait
-            PassThru               = $true
-            NoNewWindow            = $true
+            Wait                   = $($Wait);
+            PassThru               = $true;
+            NoNewWindow            = $true;
         }
-        #if ($PSCmdlet.ShouldProcess("Process [$FilePath]", "Run with args: [$ArgumentList]")) {
         if ($PSCmdlet.ShouldProcess("Process [$($FilePath)]", "Run with args: [$($ArgumentList)]")) {
-            $cmd       = Start-Process @startProcessParams
+            $cmd = Start-Process @startProcessParams
             $cmdOutput = Get-Content -Path $stdOutTempFile -Raw
-            $cmdError  = Get-Content -Path $stdErrTempFile -Raw
-
-            if ($cmd.ExitCode -ne 0 -and $Wait) {
+            $cmdError = Get-Content -Path $stdErrTempFile -Raw
+            if ($cmd.ExitCode -ne 0 -and $wait -eq $true) {
                 if ($cmdError) {
                     throw $cmdError.Trim()
                 }
@@ -113,8 +112,11 @@ function Invoke-Process {
         }
     }
     catch {
+        #$PSCmdlet.ThrowTerminatingError($_)
         WriteLog $_
+        # Write-Host "Script failed - $Logfile for more info"
         throw $_
+    
     }
     finally {
         Remove-Item -Path $stdOutTempFile, $stdErrTempFile -Force -ErrorAction Ignore
