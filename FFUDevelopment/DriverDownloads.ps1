@@ -47,11 +47,11 @@ if ($PSBoundParameters.ContainsKey('Make') -and $Make -and $Make -notin $validMa
     exit
 }
 # -------------------------------------------------------------------------
-
+#Write-host "diver path is $FFUDevelopmentPath"
 if (-not $DriversFolder) {
-    $DriversFolder = Join-Path $FFUDevelopmentPath 'Drivers'
+    $DriversFolder = Join-Path $PSScriptRoot '\DRIVERS'
 }
-
+Write-Host "Driverfoldesr set to $driversFolder"
 ##############################################################################
 #  LOGGING / HELPER FUNCTIONS
 ##############################################################################
@@ -77,7 +77,7 @@ function Invoke-Process {
         [bool]$Wait = $true
     )
 
-$ErrorActionPreference = 'Stop'
+    $ErrorActionPreference = 'Stop'
 
     try {
         $stdOutTempFile = "$env:TEMP\$((New-Guid).Guid)"
@@ -568,10 +568,11 @@ function Get-HPDrivers {
         }
         else {
             WriteLog "Downloading driver to: $DriverFilePath"
-            Start-BitsTransferWithRetry -Source $DriverUrl -Destination $DriverFilePath
-            WriteLog "Driver downloaded."
+          $downloadsuccess =  Start-BitsTransferWithRetry -Source $DriverUrl -Destination $DriverFilePath
+            
         }
 
+        if ($downloadsuccess) {WriteLog "Driver downloaded."
         # Extract
         $extractFolder = "$downloadFolder\$Name\$Version\" + $DriverFileName.TrimEnd('.exe')
         #$extractFolder = Join-Path $downloadFolder "$Name\$($Version -replace '[\\\/\:\*\?\"\<\>\|]', '_')\" + $DriverFileName.TrimEnd('.exe')
@@ -597,6 +598,7 @@ function Get-HPDrivers {
         catch {
             WriteLog "Failed to store driver version: $_"
         }
+    }
     }
 
     # Cleanup cabs
@@ -1096,8 +1098,8 @@ function Get-Drivers {
         WriteLog "Skipping driver download: either Make/Model missing or neither InstallDrivers/CopyDrivers is true."
     }
 }
-
-$ModelList ='V:\FFUDevelopment\DrivDownloads\ModelList.csv'
+write-host "hers is the $ModelList "
+#$ModelList ='V:\FFUDevelopment\DrivDownloads\ModelList.csv'
 
 ##############################################################################
 #  MAIN SCRIPT LOGIC
