@@ -570,7 +570,8 @@ function Get-HPDrivers {
         }
 
         # Extract
-        $extractFolder = Join-Path $downloadFolder "$Name\$($Version -replace '[\\\/\:\*\?\"\<\>\|]', '_')\" + $DriverFileName.TrimEnd('.exe')
+        $extractFolder = "$downloadFolder\$Name\$Version\" + $DriverFileName.TrimEnd('.exe')
+        #$extractFolder = Join-Path $downloadFolder "$Name\$($Version -replace '[\\\/\:\*\?\"\<\>\|]', '_')\" + $DriverFileName.TrimEnd('.exe')
         if (-not (Test-Path $extractFolder)) {
             WriteLog "Creating extraction folder: $extractFolder"
             New-Item -Path $extractFolder -ItemType Directory -Force | Out-Null
