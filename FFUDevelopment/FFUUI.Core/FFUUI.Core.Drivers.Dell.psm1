@@ -296,6 +296,8 @@ function Save-DellDriversTask {
             $driverFilePath = Join-Path $downloadFolder $pkg.DriverFileName
             $plainName = [IO.Path]::GetFileNameWithoutExtension($pkg.DriverFileName)
             if ([string]::IsNullOrWhiteSpace($plainName)) { $plainName = "_extract" }
+            # Use the short Dell release ID (e.g. C9M9C) as the folder name to keep final paths under MAX_PATH
+            if ($plainName -match '_([A-Za-z0-9]{5})_WIN') { $plainName = $matches[1].ToUpperInvariant() }
             $extractFolder = Join-Path $downloadFolder $plainName
 
             if (Test-Path $extractFolder) {
@@ -316,25 +318,41 @@ function Save-DellDriversTask {
             $status = "$idx/$total Extracting $driverName"
             if ($null -ne $ProgressQueue) { Invoke-ProgressUpdate -ProgressQueue $ProgressQueue -Identifier $modelDisplay -Status $status }
 
-            if (-not (Test-Path $extractFolder)) { New-Item -Path $extractFolder -ItemType Directory -Force | Out-Null }
+            if (Test-Path $extractFolder) { Remove-SafeFolder $extractFolder }
 
-            $arg1 = "/s /e=`"$extractFolder`" /l=`"$extractFolder\log.log`""
-            $arg2 = "/s /drivers=`"$extractFolder`" /l=`"$extractFolder\log.log`""
+            # Dell DUP extractors are not long-path aware, so extract into a short staging folder
+            # on the same volume and move the result into place afterwards.
+            $stagingRoot = Join-Path $makeDriversPath '_stage'
+            $stagingFolder = Join-Path $stagingRoot ([guid]::NewGuid().ToString('N').Substring(0, 8))
+            New-Item -Path $stagingFolder -ItemType Directory -Force | Out-Null
+
+            $arg1 = "/s /e=`"$stagingFolder`" /l=`"$stagingFolder\log.log`""
+            $arg2 = "/s /drivers=`"$stagingFolder`" /l=`"$stagingFolder\log.log`""
             $ok = $false
             try {
                 Invoke-Process -FilePath $driverFilePath -ArgumentList $arg1 | Out-Null
-                $sz = (Get-ChildItem -Path $extractFolder -Recurse -Exclude *.log | Measure-Object -Property Length -Sum -ErrorAction SilentlyContinue).Sum
+                $sz = (Get-ChildItem -Path $stagingFolder -Recurse -Exclude *.log | Measure-Object -Property Length -Sum -ErrorAction SilentlyContinue).Sum
                 if ($sz -gt 1KB) { $ok = $true }
                 if (-not $ok) {
-                    Remove-SafeFolder $extractFolder
-                    New-Item -Path $extractFolder -ItemType Directory -Force | Out-Null
+                    Remove-SafeFolder $stagingFolder
+                    New-Item -Path $stagingFolder -ItemType Directory -Force | Out-Null
                     Invoke-Process -FilePath $driverFilePath -ArgumentList $arg2 | Out-Null
-                    $sz = (Get-ChildItem -Path $extractFolder -Recurse -Exclude *.log | Measure-Object -Property Length -Sum -ErrorAction SilentlyContinue).Sum
+                    $sz = (Get-ChildItem -Path $stagingFolder -Recurse -Exclude *.log | Measure-Object -Property Length -Sum -ErrorAction SilentlyContinue).Sum
                     if ($sz -gt 1KB) { $ok = $true }
+                }
+                if ($ok) {
+                    Move-Item -LiteralPath $stagingFolder -Destination $extractFolder -Force -ErrorAction Stop
                 }
             }
             catch {
+                $ok = $false
                 WriteLog "Extraction error: $($_.Exception.Message)"
+            }
+            finally {
+                if (Test-Path -LiteralPath $stagingFolder) { Remove-SafeFolder $stagingFolder }
+                if ((Test-Path -LiteralPath $stagingRoot) -and -not (Get-ChildItem -LiteralPath $stagingRoot -Force -ErrorAction SilentlyContinue)) {
+                    Remove-Item -LiteralPath $stagingRoot -Force -ErrorAction SilentlyContinue
+                }
             }
 
             if ($ok) {
